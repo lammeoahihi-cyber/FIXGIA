@@ -1,0 +1,6 @@
+{
+  "name": "Công Cụ Cập Nhật Giá Excel",
+  "description": "Ứng dụng xử lý, chuẩn hóa dữ liệu Excel/CSV và tự động cập nhật giá dựa theo mã SKU đối chiếu",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
