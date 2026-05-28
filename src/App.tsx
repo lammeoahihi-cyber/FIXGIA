@@ -40,7 +40,7 @@ import {
 export default function App() {
   // --- LOGIC KHÓA TRANG WEB ---
   // Thay đổi mã khóa bí mật của bạn ở đây
-  const SECRET_CODE = 'ma_khoa_cua_ban_123'; 
+  const SECRET_CODE = 'anhlamdeptraivocungtan'; 
 
   const [isAuthorized, setIsAuthorized] = useState<boolean>(
     localStorage.getItem('site_access_granted') === 'true'
