@@ -1,0 +1,15 @@
+{
+  "routes": [
+    {
+      "src": "/(.*)",
+      "headers": {
+        "WWW-Authenticate": "Basic realm=\"Secure Area\""
+      },
+      "authentication": {
+        "username": "admin",
+        "password": "ma_khoa_bí_mat_cua_ban_123"
+      },
+      "dest": "/$1"
+    }
+  ]
+}
