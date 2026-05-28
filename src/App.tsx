@@ -18,7 +18,8 @@ import {
   Info, 
   ArrowRightLeft,
   ChevronRight,
-  Database
+  Database,
+  Lock
 } from 'lucide-react';
 
 import { ColumnMappingConfig, FileData, ProcessingLog, ProcessingResult } from './types';
@@ -37,6 +38,27 @@ import {
 } from './utils/excelProcessor';
 
 export default function App() {
+  // --- LOGIC KHÓA TRANG WEB ---
+  // Thay đổi mã khóa bí mật của bạn ở đây
+  const SECRET_CODE = 'ma_khoa_cua_ban_123'; 
+
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(
+    localStorage.getItem('site_access_granted') === 'true'
+  );
+  const [inputPassword, setInputPassword] = useState('');
+  const [lockError, setLockError] = useState('');
+
+  const handleVerifyPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputPassword === SECRET_CODE) {
+      localStorage.setItem('site_access_granted', 'true');
+      setIsAuthorized(true);
+      setLockError('');
+    } else {
+      setLockError('Mã khóa không chính xác. Vui lòng thử lại!');
+    }
+  };
+
   // Input spreadsheets
   const [sourceFile, setSourceFile] = useState<FileData | null>(null);
   const [refFile, setRefFile] = useState<FileData | null>(null);
@@ -91,7 +113,7 @@ export default function App() {
     setSourceFile(mockSource);
     setRefFile(mockRef);
     setColumnConfig({
-      sourceSkuCol: mockSource.headerRowIndex === -1 ? 5 : mockSource.headerRowIndex, // preset config for mock in excelProcessor coordinates
+      sourceSkuCol: mockSource.headerRowIndex === -1 ? 5 : mockSource.headerRowIndex,
       sourcePriceGCol: 6,
       sourcePriceHCol: 7,
       refSkuCol: 0,
@@ -127,7 +149,6 @@ export default function App() {
     setIsProcessing(true);
     addLog('Bắt đầu quy trình xử lý và đối chiếu giá...', 'info');
 
-    // Simulate subtle loading delay for premium processing feedback
     setTimeout(() => {
       try {
         const computation = processSheets(sourceFile, refFile, columnConfig);
@@ -185,6 +206,52 @@ export default function App() {
     }
   };
 
+  // GIAO DIỆN MÀN HÌNH KHÓA (BẢO VỆ)
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 font-sans antialiased">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-6 md:p-8 text-center">
+          <div className="mx-auto w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-4 shadow-sm shadow-indigo-100">
+            <Lock className="w-6 h-6" />
+          </div>
+          
+          <h2 className="text-xl font-bold text-slate-950 tracking-tight">Trang web được bảo vệ</h2>
+          <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+            Hệ thống Đối Khớp Excel đang được khóa. Vui lòng cung cấp mã khóa riêng tư để được cấp quyền truy cập nội dung.
+          </p>
+
+          <form onSubmit={handleVerifyPassword} className="mt-6 text-left">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              Mã truy cập riêng tư
+            </label>
+            <input
+              type="password"
+              placeholder="Nhập mã khóa tại đây..."
+              value={inputPassword}
+              onChange={(e) => setInputPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white text-slate-900 rounded-xl outline-none transition-all text-sm placeholder-slate-400 font-mono shadow-inner"
+            />
+            
+            {lockError && (
+              <p className="mt-2.5 text-xs font-semibold text-rose-600 flex items-center gap-1">
+                ⚠️ {lockError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="mt-5 w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              Xác thực & Vào ứng dụng
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // GIAO DIỆN CHÍNH (Sau khi đã nhập đúng mã khóa)
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 font-sans antialiased pb-12 transition-all">
       {/* Top Professional Navigation Shell */}
@@ -221,6 +288,16 @@ export default function App() {
                 Gỡ File
               </button>
             )}
+            <button
+              onClick={() => {
+                localStorage.removeItem('site_access_granted');
+                setIsAuthorized(false);
+              }}
+              className="px-3 py-2 text-xs font-medium text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl border border-dashed border-slate-200 transition-all cursor-pointer"
+              title="Đăng xuất / Khóa lại trang"
+            >
+              Khóa lại
+            </button>
           </div>
         </div>
       </header>
